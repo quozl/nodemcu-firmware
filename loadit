@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if echo $PATH | grep -qiv python27; then
+  export PATH=/c/Python27:$PATH
+fi
+
+tools/esptool.py --port COM36 -b 115200 write_flash -fm=dio -fs=32m 0x00000 bin/0x00000.bin 0x10000 bin/0x10000.bin

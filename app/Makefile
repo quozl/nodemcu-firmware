@@ -15,6 +15,9 @@ TARGET = eagle
 #FLAVOR = release
 FLAVOR = debug
 
+# XOBJS := /Users/wmb/github/cforth-upstream/build/esp8266/app.o
+XOBJS := /c/Users/wmb/Documents/GitHub/cforth/build/esp8266/app.o
+
 #EXTRA_CCFLAGS += -u
 
 ifndef PDIR # {
@@ -27,7 +30,6 @@ SUBDIRS= 					\
 	pcm					\
 	platform 				\
 	libc 					\
-	lua 					\
 	lwip 					\
 	coap 					\
 	mqtt 					\
@@ -35,7 +37,6 @@ SUBDIRS= 					\
 	u8glib 					\
 	ucglib					\
 	smart 					\
-	modules 				\
 	spiffs 					\
 	cjson 					\
 	crypto 					\
@@ -74,7 +75,6 @@ COMPONENTS_eagle.app.v6 = 			\
 	platform/libplatform.a 			\
 	task/libtask.a 				\
 	libc/liblibc.a 				\
-	lua/liblua.a 				\
 	lwip/liblwip.a 				\
 	coap/coap.a 				\
 	mqtt/mqtt.a 				\
@@ -88,13 +88,12 @@ COMPONENTS_eagle.app.v6 = 			\
 	tsl2561/tsl2561lib.a			\
 	http/libhttp.a				\
 	net/libnodemcu_net.a			\
-	modules/libmodules.a			\
 
 # Inspect the modules library and work out which modules need to be linked.
 # For each enabled module, a symbol name of the form XYZ_module_selected is
 # returned. At link time those names are declared undefined, so those (and
 # only those) modules are pulled in.
-SELECTED_MODULE_SYMS=$(filter %_module_selected %module_selected1,$(shell $(NM) modules/.output/$(TARGET)/$(FLAVOR)/lib/libmodules.a))
+# SELECTED_MODULE_SYMS=$(filter %_module_selected %module_selected1,$(shell $(NM) modules/.output/$(TARGET)/$(FLAVOR)/lib/libmodules.a))
 
 LINKFLAGS_eagle.app.v6 = 			\
 	-Wl,--gc-sections 			\
@@ -106,6 +105,7 @@ LINKFLAGS_eagle.app.v6 = 			\
 	-Wl,--wrap=_xtos_set_exception_handler	\
 	-Wl,-static 				\
 	$(addprefix -u , $(SELECTED_MODULE_SYMS)) \
+        $(XOBJS)                                \
 	-Wl,--start-group 			\
 	-lc 					\
 	-lgcc 					\

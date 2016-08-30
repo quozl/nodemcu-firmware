@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if echo $PATH | grep -qiv python27; then
+  export PATH=/c/Python27:$PATH
+fi
+
+if echo $PATH | grep -qiv xtensa; then
+  export PATH=$PATH:/c/xtensa-lx106-elf/bin
+fi
+
+rm -f app/.output/eagle/debug/image/eagle.app.v6.out
+make --no-print-directory
