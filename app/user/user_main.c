@@ -20,7 +20,9 @@
 
 #include "ets_sys.h"
 #include "driver/uart.h"
+#ifdef USE_NEW_TASKS
 #include "task/task.h"
+#endif
 #include "mem.h"
 
 #ifdef LUA_USE_MODULES_RTCTIME
@@ -51,6 +53,7 @@ void TEXT_SECTION_ATTR user_start_trampoline (void)
   call_user_start ();
 }
 
+#ifdef USE_NEW_TASKS
 // +================== New task interface ==================+
 static void start_lua(task_param_t param, uint8 priority) {
   char* lua_argv[] = { (char *)"lua", (char *)"-i", NULL };
@@ -72,6 +75,29 @@ task_handle_t user_get_input_sig(void) {
 bool user_process_input(bool force) {
     return task_post_low(input_sig, force);
 }
+#else
+void task_lua(os_event_t *e){
+    char* lua_argv[] = { (char *)"lua", (char *)"-i", NULL };
+    switch(e->sig){
+        case SIG_LUA:
+            lua_main( 2, lua_argv );
+            break;
+        case SIG_UARTINPUT:
+            lua_handle_input (false);
+            break;
+        case LUA_PROCESS_LINE_SIG:
+            lua_handle_input (true);
+            break;
+        default:
+            break;
+    }
+}
+#endif
+
+#undef NODE_ERR
+#define NODE_ERR(msg)
+#undef NODE_DBG
+#define NODE_DBG(msg)
 
 void nodemcu_init(void)
 {
@@ -101,7 +127,7 @@ void nodemcu_init(void)
 #if defined ( BUILD_SPIFFS )
     if (!fs_mount()) {
         // Failed to mount -- try reformat
-	c_printf("Formatting file system. Please wait...\n");
+//	c_printf("Formatting file system. Please wait...\n");
         if (!fs_format()) {
             NODE_ERR( "\n*** ERROR ***: unable to format. FS might be compromised.\n" );
             NODE_ERR( "It is advised to re-flash the NodeMCU image.\n" );
@@ -112,7 +138,13 @@ void nodemcu_init(void)
 #endif
     // endpoint_setup();
 
+#ifdef USE_NEW_TASKS
     task_post_low(task_get_id(start_lua),'s');
+#else
+    taskQueue = (os_event_t *)os_malloc(sizeof(os_event_t) * TASK_QUEUE_LEN);
+    system_os_task(task_lua, USER_TASK_PRIO_0, taskQueue, TASK_QUEUE_LEN);
+    system_os_post(LUA_TASK_PRIO,SIG_LUA,'s');
+#endif
 }
 
 #ifdef LUA_USE_MODULES_WIFI
@@ -184,8 +216,12 @@ void user_init(void)
 
     UartBautRate br = BIT_RATE_DEFAULT;
 
+#ifdef USE_NEW_TASKS
     input_sig = task_get_id(handle_input);
     uart_init (br, br, input_sig);
+#else
+    uart_init (br, br, USER_TASK_PRIO_0, SIG_UARTINPUT);
+#endif
 
 #ifndef NODE_DEBUG
     system_set_os_print(0);

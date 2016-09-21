@@ -29,7 +29,12 @@
 
 
 // For event signalling
+#ifdef USE_NEW_TASKS
 static task_handle_t sig = 0;
+#else
+static uint8 task = USER_TASK_PRIO_MAX;
+static os_signal_t sig;
+#endif
 
 // UartDev is defined and initialized in rom code.
 extern UartDevice UartDev;
@@ -270,8 +275,13 @@ uart0_rx_intr_handler(void *para)
         got_input = true;
     }
 
+#ifdef USE_NEW_TASKS
     if (got_input && sig)
       task_post_low (sig, false);
+#else
+    if (got_input && task != USER_TASK_PRIO_MAX)
+      system_os_post (task, sig, UART0);
+#endif
 }
 
 static void 
@@ -314,8 +324,14 @@ uart_stop_autobaud()
  * Returns      : NONE
 *******************************************************************************/
 void ICACHE_FLASH_ATTR
+#ifdef USE_NEW_TASKS
 uart_init(UartBautRate uart0_br, UartBautRate uart1_br, os_signal_t sig_input)
 {
+#else
+uart_init(UartBautRate uart0_br, UartBautRate uart1_br, uint8 task_prio, os_signal_t sig_input)
+{
+    task = task_prio;
+#endif
     sig = sig_input;
 
     // rom use 74880 baut_rate, here reinitialize

@@ -27,24 +27,9 @@ SPECIAL_MKTARGETS=$(APP_MKTARGETS)
 SUBDIRS= 					\
 	user 					\
 	driver 					\
-	pcm					\
 	platform 				\
-	libc 					\
 	lwip 					\
-	coap 					\
-	mqtt 					\
-	task 					\
-	u8glib 					\
-	ucglib					\
-	smart 					\
-	spiffs 					\
-	cjson 					\
-	crypto 					\
-	dhtlib					\
-	tsl2561					\
-	net					\
-	http
-
+	spiffs
 endif # } PDIR
 
 APPDIR = .
@@ -71,23 +56,9 @@ LD_FILE = $(LDDIR)/nodemcu.ld
 COMPONENTS_eagle.app.v6 = 			\
 	user/libuser.a 				\
 	driver/libdriver.a 			\
-	pcm/pcm.a				\
 	platform/libplatform.a 			\
-	task/libtask.a 				\
-	libc/liblibc.a 				\
 	lwip/liblwip.a 				\
-	coap/coap.a 				\
-	mqtt/mqtt.a 				\
-	u8glib/u8glib.a 			\
-	ucglib/ucglib.a 			\
-	smart/smart.a 				\
-	spiffs/spiffs.a 			\
-	cjson/libcjson.a 			\
-	crypto/libcrypto.a 			\
-	dhtlib/libdhtlib.a 			\
-	tsl2561/tsl2561lib.a			\
-	http/libhttp.a				\
-	net/libnodemcu_net.a			\
+	spiffs/spiffs.a
 
 # Inspect the modules library and work out which modules need to be linked.
 # For each enabled module, a symbol name of the form XYZ_module_selected is

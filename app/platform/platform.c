@@ -14,6 +14,9 @@
 #include "driver/uart.h"
 #include "driver/sigma_delta.h"
 
+#undef NODE_ERR
+#define NODE_ERR(...)
+
 #ifdef GPIO_INTERRUPT_ENABLE
 static task_handle_t gpio_task_handle;
 
